@@ -17,10 +17,11 @@
 
 
 def setup(
-        scale=1.0,  # Scaling factor for default image size
-                    # Use only this to resize your image.
-        nrows=1,    # Number of rows in plot
-        ncols=1     # Number of colums in plot
+        figsize = None, # Size of figure
+        scale = 1.0,    # Scaling factor for default image size
+                        # Use only this to resize your image.
+        nrows = 1,      # Number of rows in plot
+        ncols = 1,      # Number of colums in plot
     ):
     """
     Setup the plotting with default parameters which are optimized for PDF DinA4 plots
@@ -38,14 +39,18 @@ def setup(
 
     import __main__ as pc
 
-    pc.default_figsize = (4, 3)
-    pc.default_figsize = (pc.default_figsize[0]*scale, pc.default_figsize[1]*scale)
+    if figsize == None:
+        default_figsize = (4, 3)
+        figsize = (default_figsize[0]*scale, default_figsize[1]*scale)
+    else:
+        figsize = (figsize[0]*scale, figsize[1]*scale)
 
     import matplotlib.pyplot as plt
 
     # Start new plot
     plt.close()
-    return plt.subplots(nrows, ncols, figsize=pc.default_figsize)
+
+    return plt.subplots(nrows, ncols, figsize=figsize)
 
 
 
