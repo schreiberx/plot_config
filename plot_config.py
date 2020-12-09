@@ -17,11 +17,12 @@
 
 
 def setup(
-        figsize = None, # Size of figure
         scale = 1.0,    # Scaling factor for default image size
                         # Use only this to resize your image.
         nrows = 1,      # Number of rows in plot
         ncols = 1,      # Number of colums in plot
+        figsize = (4, 3),   # Size of figure
+        uselatex = False
     ):
     """
     Setup the plotting with default parameters which are optimized for PDF DinA4 plots
@@ -29,28 +30,35 @@ def setup(
     Use the 'scale' parameter to enlarge or shrink the picture if required
     """
 
+    from matplotlib import rc
+
+    if uselatex:
+        rc('text', usetex=True)
+        rc('pgf', texsystem='pdflatex')
+        rc('font', family='serif')
+        rc('font', size=10)
+        rc('axes', labelsize=10)
+        rc('axes', titlesize=10)
+        rc('figure', titlesize=12)
+
     #
     # Important: Optimize this only for PDF output!
     #
-    import matplotlib
-    matplotlib.rcParams.update({'figure.dpi': 300})
-    matplotlib.rcParams.update({'font.size': 8})
-    matplotlib.rcParams.update({'legend.fontsize': 6})
+    if 1:
+        rc('figure', dpi = 300)
+        rc('font', size = 8)
+        rc('legend', fontsize = 6)
 
     import __main__ as pc
 
-    if figsize == None:
-        default_figsize = (4, 3)
-        figsize = (default_figsize[0]*scale, default_figsize[1]*scale)
-    else:
-        figsize = (figsize[0]*scale, figsize[1]*scale)
+    pc.default_figsize = figsize
+    pc.default_figsize = (pc.default_figsize[0]*scale, pc.default_figsize[1]*scale)
 
     import matplotlib.pyplot as plt
 
     # Start new plot
     plt.close()
-
-    return plt.subplots(nrows, ncols, figsize=figsize)
+    return plt.subplots(nrows, ncols, figsize=pc.default_figsize)
 
 
 
@@ -89,7 +97,10 @@ class PlotStyles:
             (0, (6, 1, 6, 1, 6, 1)),
         ]
 
-        self.colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive', 'tab:cyan']
+        #self.colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive', 'tab:cyan']
+
+        # New order of colors which has two colorblind suitable colors first
+        self.colors = ['#b4b400', '#00b4b4', 'tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:gray']
 
         self.reset()
 
@@ -170,7 +181,9 @@ if __name__ == "__main__":
 
 
     x = np.linspace(0, 1, 80)
+
     y = np.sin(x*10)
+
 
     #
     # The next plotting style can be loaded with ps.getNextStyle()
@@ -178,12 +191,17 @@ if __name__ == "__main__":
     #
     # In order to use it as a parameter, we use the ** prefix
     #
-    plt.plot(x, y, **ps.getNextStyle(), label="f(x) = sin(x)")
+    plt.plot(x, y, **ps.getNextStyle(), label="f(x) = sin(x*10)")
 
     y = np.cos(x*10)
-    plt.plot(x, y, **ps.getNextStyle(), label="f(x) = cos(x)")
+    plt.plot(x, y, **ps.getNextStyle(), label="f(x) = cos(x*10)")
 
-    y = x
+    for i in range(10):
+        s = 0.3
+        y = np.cos(x*10+i*s)
+        plt.plot(x, y, **ps.getNextStyle(), label="f(x) = cos(x*10+"+str(i)+"*"+str(s)+")")
+
+    y = x*1
     plt.plot(x[-len(x)//7:], y[-len(x)//7:], color='black', linestyle="dashed", linewidth=1, label="ref. order 1")
 
     plt.xlabel("x")
