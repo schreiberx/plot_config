@@ -6,6 +6,7 @@
 # Creation Date: Somewhen 2019
 #
 # Changelog:
+# 2020-12-09: Changes for priorizing colors suitable for color vision defected people
 # 2019-01-14: Minor updates & Cleanups (Martin)
 # 2019-02-01: Added markevery option
 #
