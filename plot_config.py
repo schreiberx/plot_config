@@ -12,17 +12,19 @@
 #
 
 #
-# There is an EXAMPLE GIVEN BELOW which plots a picture if this file is executed directly
+# There is an example given below which plots a picture if this file is executed directly
 #
 
-
+import matplotlib.pyplot as plt
 
 def setup(
         scale = 1.0,    # Scaling factor for default image size
                         # Use only this to resize your image.
         nrows = 1,      # Number of rows in plot
         ncols = 1,      # Number of colums in plot
-        figsize = (4, 3),   # Size of figure
+        figsize = None, # Size of figure
+        square_figsize = False,
+        title = True,
         uselatex = False
     ):
     """
@@ -32,6 +34,14 @@ def setup(
     """
 
     from matplotlib import rc
+
+    default_figsize = (3, 2)
+    if figsize == None:
+        figsize = (default_figsize[0]*ncols, default_figsize[1]*nrows)
+
+    if square_figsize:
+        _ = max(figsize)
+        figsize = (_, _)
 
     if uselatex:
         rc('text', usetex=True)
@@ -47,19 +57,43 @@ def setup(
     #
     if 1:
         rc('figure', dpi = 300)
-        rc('font', size = 8)
-        rc('legend', fontsize = 6)
+        rc('font', size = 6)
+        rc('legend', fontsize = 5)
+        rc('axes', titlesize=6)
+        rc('figure', titlesize=7)
 
-    import __main__ as pc
+    if 1:
+        # PNG output dpi
+        rc('savefig', dpi = 300)
 
-    pc.default_figsize = figsize
-    pc.default_figsize = (pc.default_figsize[0]*scale, pc.default_figsize[1]*scale)
 
-    import matplotlib.pyplot as plt
+    figsize = (figsize[0]*scale, figsize[1]*scale)
+
+    # If there's no title, decrease by 10%
+    if title == False:
+        figsize = (figsize[0], figsize[1]*0.9)
 
     # Start new plot
     plt.close()
-    return plt.subplots(nrows, ncols, figsize=pc.default_figsize)
+    return plt.subplots(nrows, ncols, figsize=figsize)
+
+
+def savefig(filename, **kwargs):
+    """
+    Homebrew method to save figure
+
+    Has some nice features such as removing particular tags in PDFs to ensure bytewise reproducibility
+    """
+
+    if ".pdf" in filename:
+        # Remove all metadata from PDF output file
+        if 'metadata' in kwargs:
+            raise Exception("TODO")
+        else:
+            kwargs['metadata'] = {'Creator': None, 'Producer': None, 'CreationDate': None}
+
+    print("Saving image to figure '"+filename+"'")
+    plt.savefig(filename, **kwargs)
 
 
 
@@ -160,7 +194,6 @@ class PlotStyles:
 
 
 if __name__ == "__main__":
-    import matplotlib.pyplot as plt
     import numpy as np
 
     # Import plot_config
@@ -173,12 +206,12 @@ if __name__ == "__main__":
     # The default scaling of 1.0 is optimized for smaller
     # plots on presentations if you store them as a .pdf file
     #
-    fig, ax = pc.setup(scale=1.0)
+    fig, ax = pc.setup()
 
     #
     # Get a handler to different plotting styles
     #
-    ps = PlotStyles()
+    ps = pc.PlotStyles()
 
 
     x = np.linspace(0, 1, 80)
@@ -200,7 +233,16 @@ if __name__ == "__main__":
     for i in range(10):
         s = 0.3
         y = np.cos(x*10+i*s)
-        plt.plot(x, y, **ps.getNextStyle(), label="f(x) = cos(x*10+"+str(i)+"*"+str(s)+")")
+
+        if 1:
+            # Directly use plot style
+            plt.plot(x, y, **ps.getNextStyle(), label="f(x) = cos(x*10+"+str(i)+"*"+str(s)+")")
+        else:
+            # Change plot styles
+            pstyle = ps.getNextStyle()
+            # E.g. use no markers
+            pstyle['marker'] = ''
+            plt.plot(x, y, **pstyle, label="f(x) = cos(x*10+"+str(i)+"*"+str(s)+")")
 
     y = x*1
     plt.plot(x[-len(x)//7:], y[-len(x)//7:], color='black', linestyle="dashed", linewidth=1, label="ref. order 1")
@@ -210,5 +252,8 @@ if __name__ == "__main__":
     plt.title("plot_config example")
     plt.legend()
     plt.tight_layout()
+    #outfile = "/tmp/asdf.pdf"
+    #print("Saving to '"+outfile+"'")
+    #plt.savefig(outfile)
     plt.show()
 
