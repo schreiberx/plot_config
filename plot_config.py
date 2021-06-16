@@ -78,12 +78,24 @@ def setup(
     return plt.subplots(nrows, ncols, figsize=figsize)
 
 
-def savefig(filename, **kwargs):
+def savefig(
+        filename,
+        fig = None,
+        overwrite_file = True,
+        verbose = 0,
+        **kwargs
+    ):
     """
     Homebrew method to save figure
 
     Has some nice features such as removing particular tags in PDFs to ensure bytewise reproducibility
     """
+
+
+    if not overwrite_file:
+        import os
+        if os.path.exists(filename):
+            raise Exception("Output file '"+filename+"' already exists")
 
     if ".pdf" in filename:
         # Remove all metadata from PDF output file
@@ -92,9 +104,17 @@ def savefig(filename, **kwargs):
         else:
             kwargs['metadata'] = {'Creator': None, 'Producer': None, 'CreationDate': None}
 
-    print("Saving image to figure '"+filename+"'")
-    plt.savefig(filename, **kwargs)
+    if verbose > 0:
+        print("Saving image to figure '"+filename+"'")
 
+    if fig == None:
+        plt.savefig(filename, **kwargs)
+    else:
+        plt.savefig(filename, **kwargs)
+
+
+def show():
+    plt.show()
 
 
 class PlotStyles:
@@ -110,11 +130,11 @@ class PlotStyles:
 
         self.markers = []
 
+        # We start with all variants of crosses 
+        self.markers += ['+', 'x', '1', '2', '3', '4']
+
         # dot
         self.markers += ['.']
-
-        # crosses
-        self.markers += ['1', '2', '3', '4', '+', 'x']
 
         # Triangles
         self.markers += [4, 5, 6, 7, 8, 9, 10, 11]
@@ -206,7 +226,7 @@ if __name__ == "__main__":
     # The default scaling of 1.0 is optimized for smaller
     # plots on presentations if you store them as a .pdf file
     #
-    fig, ax = pc.setup()
+    fig, ax = pc.setup(scale=1.5)
 
     #
     # Get a handler to different plotting styles
@@ -225,10 +245,10 @@ if __name__ == "__main__":
     #
     # In order to use it as a parameter, we use the ** prefix
     #
-    plt.plot(x, y, **ps.getNextStyle(), label="f(x) = sin(x*10)")
+    ax.plot(x, y, **ps.getNextStyle(), label="f(x) = sin(x*10)")
 
     y = np.cos(x*10)
-    plt.plot(x, y, **ps.getNextStyle(), label="f(x) = cos(x*10)")
+    ax.plot(x, y, **ps.getNextStyle(), label="f(x) = cos(x*10)")
 
     for i in range(10):
         s = 0.3
@@ -245,15 +265,15 @@ if __name__ == "__main__":
             plt.plot(x, y, **pstyle, label="f(x) = cos(x*10+"+str(i)+"*"+str(s)+")")
 
     y = x*1
-    plt.plot(x[-len(x)//7:], y[-len(x)//7:], color='black', linestyle="dashed", linewidth=1, label="ref. order 1")
+    ax.plot(x[-len(x)//7:], y[-len(x)//7:], color='black', linestyle="dashed", linewidth=1, label="ref. order 1")
 
-    plt.xlabel("x")
-    plt.ylabel("f(x)")
-    plt.title("plot_config example")
-    plt.legend()
-    plt.tight_layout()
+    ax.set_xlabel("x")
+    ax.set_ylabel("f(x)")
+    ax.set_title("plot_config example")
+    ax.legend()
+    fig.tight_layout()
     #outfile = "/tmp/asdf.pdf"
     #print("Saving to '"+outfile+"'")
     #plt.savefig(outfile)
-    plt.show()
+    pc.show()
 
